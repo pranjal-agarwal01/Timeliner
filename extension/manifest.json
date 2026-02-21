@@ -48,6 +48,19 @@
                 "content-styles.css"
             ],
             "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "https://takeuforward.org/*",
+                "https://www.takeuforward.org/*"
+            ],
+            "js": [
+                "content-tuf.js"
+            ],
+            "css": [
+                "content-styles.css"
+            ],
+            "run_at": "document_idle"
         }
     ],
     "icons": {
