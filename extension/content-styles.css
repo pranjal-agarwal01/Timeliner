@@ -1,0 +1,61 @@
+/* Floating Add to DSA Tracker button — injected on problem pages */
+
+.dsa-tracker-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%);
+    color: #fff;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow:
+        0 4px 24px rgba(124, 58, 237, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: dsaFabSlideIn 0.4s ease-out;
+    white-space: nowrap;
+}
+
+.dsa-tracker-fab:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+        0 6px 32px rgba(124, 58, 237, 0.5),
+        0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.dsa-tracker-fab:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.dsa-tracker-fab:disabled {
+    opacity: 0.85;
+    cursor: wait;
+}
+
+.dsa-tracker-fab.dsa-tracker-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow:
+        0 4px 24px rgba(16, 185, 129, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes dsaFabSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

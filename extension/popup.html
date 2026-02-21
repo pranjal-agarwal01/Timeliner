@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Tracker</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 320px;
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: #0a0a12;
+            color: #e8e6f0;
+            padding: 1.25rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .header h1 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a78bfa, #c4b5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 0.75rem;
+            color: #9896a8;
+            margin-top: 0.2rem;
+        }
+
+        /* States */
+        .logged-in,
+        .login-form {
+            display: none;
+        }
+
+        body.is-logged-in .logged-in {
+            display: block;
+        }
+
+        body.is-logged-in .login-form {
+            display: none;
+        }
+
+        body:not(.is-logged-in) .login-form {
+            display: block;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 0.75rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #9896a8;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.25rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            background: rgba(18, 17, 31, 0.8);
+            border: 1px solid rgba(124, 58, 237, 0.15);
+            border-radius: 8px;
+            color: #e8e6f0;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
+        }
+
+        /* Buttons */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9, #5b21b6);
+            color: #fff;
+            box-shadow: 0 2px 16px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #9896a8;
+            border: 1px solid rgba(124, 58, 237, 0.15);
+            margin-top: 0.5rem;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(124, 58, 237, 0.06);
+            color: #e8e6f0;
+        }
+
+        /* Status */
+        .status {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .status-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .status p {
+            font-size: 0.82rem;
+            color: #9896a8;
+        }
+
+        .status .email {
+            font-weight: 600;
+            color: #a78bfa;
+            margin-top: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        /* Server URL */
+        .server-config {
+            margin-bottom: 0.75rem;
+            padding: 0.5rem 0.65rem;
+            background: rgba(18, 17, 31, 0.5);
+            border: 1px solid rgba(124, 58, 237, 0.1);
+            border-radius: 6px;
+        }
+
+        .server-config label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #6b6980;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .server-config input {
+            margin-top: 0.2rem;
+            font-size: 0.78rem;
+            padding: 0.4rem 0.6rem;
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 0.78rem;
+            text-align: center;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .success-msg {
+            color: #10b981;
+            font-size: 0.78rem;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="logo">📋</div>
+        <h1>DSA Tracker</h1>
+        <p>Auto-import questions from LeetCode & GFG</p>
+    </div>
+
+    <!-- Login Form -->
+    <div class="login-form">
+        <div class="server-config">
+            <label>Backend URL</label>
+            <input type="url" id="server-url" placeholder="https://your-backend.onrender.com" />
+        </div>
+        <form id="auth-form">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="you@example.com" required />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••••" required />
+            </div>
+            <button type="submit" class="btn btn-primary" id="login-btn">🔑 Login</button>
+        </form>
+        <div class="error" id="error-msg"></div>
+    </div>
+
+    <!-- Logged In State -->
+    <div class="logged-in">
+        <div class="status">
+            <div class="status-icon">✅</div>
+            <p>Connected & ready!</p>
+            <div class="email" id="user-email"></div>
+            <p style="margin-top: 0.75rem; font-size: 0.78rem;">Visit a LeetCode or GFG problem page to see the
+                <strong>➕ Add to DSA Tracker</strong> button.</p>
+        </div>
+        <button class="btn btn-ghost" id="logout-btn">Logout</button>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

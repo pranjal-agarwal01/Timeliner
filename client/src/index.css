@@ -825,6 +825,102 @@ textarea {
   color: var(--text-muted);
 }
 
+/* ─── Active Recall ────────────────────────────────────────────────────────── */
+.due-item-recall {
+  border-left: 3px solid var(--accent);
+}
+
+.due-item-title-text {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.due-item-expanded {
+  flex-direction: column;
+  gap: 0.65rem;
+  border-left: 3px solid var(--accent);
+  animation: fadeUp 0.25s ease-out;
+}
+
+.recall-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.recall-prompt {
+  font-size: 0.85rem;
+  color: var(--accent-light);
+  font-weight: 600;
+}
+
+.recall-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.85rem;
+  resize: vertical;
+  min-height: 60px;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.recall-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.recall-input::placeholder {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.recall-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.recall-answer,
+.recall-notes {
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.recall-answer {
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.recall-notes {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.recall-answer-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.recall-answer p,
+.recall-notes p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
 /* ─── Confirm Actions ──────────────────────────────────────────────────────── */
 .confirm-actions {
   display: flex;

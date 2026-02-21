@@ -15,7 +15,15 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
     cors({
-        origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+        origin: function (origin, callback) {
+            const allowed = process.env.CLIENT_ORIGIN || "http://localhost:5173";
+            // Allow: client origin, chrome extensions, and no-origin (e.g. Postman)
+            if (!origin || origin === allowed || origin.startsWith("chrome-extension://")) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
         credentials: true,
     })
 );

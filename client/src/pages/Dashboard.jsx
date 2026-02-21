@@ -258,6 +258,9 @@ export default function Dashboard() {
 function DueItem({ question, type, onRevise }) {
     const [marking, setMarking] = useState(false);
     const [confirming, setConfirming] = useState(false);
+    // Active Recall: 'collapsed' → 'recall' → 'revealed'
+    const [phase, setPhase] = useState('collapsed');
+    const [recallText, setRecallText] = useState('');
 
     const handleConfirm = async () => {
         setMarking(true);
@@ -266,49 +269,132 @@ function DueItem({ question, type, onRevise }) {
         setConfirming(false);
     };
 
-    return (
-        <div className="due-item">
-            <div className="due-item-info">
-                <a href={question.link} target="_blank" rel="noopener noreferrer" className="due-item-title">
-                    {question.title}
-                </a>
-                <div className="due-item-meta">
+    // Phase: collapsed — show title only with "Recall" button
+    if (phase === 'collapsed') {
+        return (
+            <div className="due-item due-item-recall">
+                <div className="due-item-info">
+                    <span className="due-item-title-text">{question.title}</span>
+                    <div className="due-item-meta">
+                        {question.difficulty && (
+                            <span className={`diff-badge diff-${question.difficulty.toLowerCase()}`}>
+                                {question.difficulty}
+                            </span>
+                        )}
+                    </div>
+                </div>
+                <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => setPhase('recall')}
+                >
+                    🧠 Recall
+                </button>
+            </div>
+        );
+    }
+
+    // Phase: recall — ask user to type their approach
+    if (phase === 'recall') {
+        return (
+            <div className="due-item due-item-expanded">
+                <div className="recall-header">
+                    <span className="due-item-title-text">{question.title}</span>
                     {question.difficulty && (
                         <span className={`diff-badge diff-${question.difficulty.toLowerCase()}`}>
                             {question.difficulty}
                         </span>
                     )}
-                    {question.tags?.map((tag) => (
-                        <span key={tag} className="tag-badge">{tag}</span>
-                    ))}
                 </div>
-                {question.notes && <p className="due-item-notes">{question.notes}</p>}
-            </div>
-            {confirming ? (
-                <div className="confirm-actions">
+                <p className="recall-prompt">💡 Can you explain the approach from memory?</p>
+                <textarea
+                    className="recall-input"
+                    placeholder="Type your recalled approach here... (e.g. Use a hashmap to store complements, iterate once...)"
+                    value={recallText}
+                    onChange={(e) => setRecallText(e.target.value)}
+                    rows={3}
+                    autoFocus
+                ></textarea>
+                <div className="recall-actions">
                     <button
-                        className="btn btn-accent btn-sm"
-                        onClick={handleConfirm}
-                        disabled={marking}
+                        className="btn btn-primary btn-sm"
+                        onClick={() => setPhase('revealed')}
                     >
-                        {marking ? '...' : '✓ Yes'}
+                        👁️ Reveal Solution
                     </button>
                     <button
                         className="btn btn-ghost btn-sm"
-                        onClick={() => setConfirming(false)}
-                        disabled={marking}
+                        onClick={() => { setPhase('collapsed'); setRecallText(''); }}
                     >
-                        ✗ No
+                        ← Back
                     </button>
                 </div>
-            ) : (
-                <button
-                    className="btn btn-accent btn-sm"
-                    onClick={() => setConfirming(true)}
-                >
-                    ✓ Revised
-                </button>
+            </div>
+        );
+    }
+
+    // Phase: revealed — show everything + mark revised
+    return (
+        <div className="due-item due-item-expanded">
+            <div className="recall-header">
+                <a href={question.link} target="_blank" rel="noopener noreferrer" className="due-item-title">
+                    {question.title} ↗
+                </a>
+                {question.difficulty && (
+                    <span className={`diff-badge diff-${question.difficulty.toLowerCase()}`}>
+                        {question.difficulty}
+                    </span>
+                )}
+            </div>
+            {recallText && (
+                <div className="recall-answer">
+                    <span className="recall-answer-label">Your recall:</span>
+                    <p>{recallText}</p>
+                </div>
             )}
+            {question.notes && (
+                <div className="recall-notes">
+                    <span className="recall-answer-label">Original notes:</span>
+                    <p>{question.notes}</p>
+                </div>
+            )}
+            <div className="due-item-meta">
+                {question.tags?.map((tag) => (
+                    <span key={tag} className="tag-badge">{tag}</span>
+                ))}
+            </div>
+            <div className="recall-actions">
+                {confirming ? (
+                    <div className="confirm-actions">
+                        <button
+                            className="btn btn-accent btn-sm"
+                            onClick={handleConfirm}
+                            disabled={marking}
+                        >
+                            {marking ? '...' : '✓ Yes, mark done'}
+                        </button>
+                        <button
+                            className="btn btn-ghost btn-sm"
+                            onClick={() => setConfirming(false)}
+                            disabled={marking}
+                        >
+                            ✗ No
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        className="btn btn-accent btn-sm"
+                        onClick={() => setConfirming(true)}
+                    >
+                        ✓ Mark Revised
+                    </button>
+                )}
+                <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setPhase('recall')}
+                >
+                    ← Back
+                </button>
+            </div>
         </div>
     );
 }
