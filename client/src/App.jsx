@@ -7,6 +7,7 @@ import VerifyOTP from './pages/VerifyOTP';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Completed from './pages/Completed';
+import Landing from './pages/Landing';
 
 export default function App() {
     return (
@@ -50,7 +51,8 @@ export default function App() {
                             </ProtectedRoute>
                         }
                     />
-                    <Route path="*" element={<Navigate to="/login" replace />} />
+                    <Route path="/" element={<Landing />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

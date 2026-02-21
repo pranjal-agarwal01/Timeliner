@@ -257,11 +257,13 @@ export default function Dashboard() {
 
 function DueItem({ question, type, onRevise }) {
     const [marking, setMarking] = useState(false);
+    const [confirming, setConfirming] = useState(false);
 
-    const handleClick = async () => {
+    const handleConfirm = async () => {
         setMarking(true);
         await onRevise(question._id, type);
         setMarking(false);
+        setConfirming(false);
     };
 
     return (
@@ -282,13 +284,31 @@ function DueItem({ question, type, onRevise }) {
                 </div>
                 {question.notes && <p className="due-item-notes">{question.notes}</p>}
             </div>
-            <button
-                className="btn btn-accent btn-sm"
-                onClick={handleClick}
-                disabled={marking}
-            >
-                {marking ? '...' : '✓ Revised'}
-            </button>
+            {confirming ? (
+                <div className="confirm-actions">
+                    <button
+                        className="btn btn-accent btn-sm"
+                        onClick={handleConfirm}
+                        disabled={marking}
+                    >
+                        {marking ? '...' : '✓ Yes'}
+                    </button>
+                    <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setConfirming(false)}
+                        disabled={marking}
+                    >
+                        ✗ No
+                    </button>
+                </div>
+            ) : (
+                <button
+                    className="btn btn-accent btn-sm"
+                    onClick={() => setConfirming(true)}
+                >
+                    ✓ Revised
+                </button>
+            )}
         </div>
     );
 }
