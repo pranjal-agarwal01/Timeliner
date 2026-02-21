@@ -274,7 +274,7 @@ function DueItem({ question, type, onRevise }) {
         return (
             <div className="due-item due-item-recall">
                 <div className="due-item-info">
-                    <span className="due-item-title-text">{question.title}</span>
+                    <a href={question.link} target="_blank" rel="noopener noreferrer" className="due-item-title">{question.title}</a>
                     <div className="due-item-meta">
                         {question.difficulty && (
                             <span className={`diff-badge diff-${question.difficulty.toLowerCase()}`}>
@@ -298,7 +298,7 @@ function DueItem({ question, type, onRevise }) {
         return (
             <div className="due-item due-item-expanded">
                 <div className="recall-header">
-                    <span className="due-item-title-text">{question.title}</span>
+                    <a href={question.link} target="_blank" rel="noopener noreferrer" className="due-item-title">{question.title}</a>
                     {question.difficulty && (
                         <span className={`diff-badge diff-${question.difficulty.toLowerCase()}`}>
                             {question.difficulty}
