@@ -34,7 +34,7 @@ router.post(
     validate,
     async (req, res) => {
         try {
-            const { title, link, tags, notes, difficulty } = req.body;
+            const { title, link, tags, notes, difficulty, solvedDate: clientDate } = req.body;
 
             // Parse tags: accept array or comma-separated string
             let parsedTags = [];
@@ -47,7 +47,11 @@ router.post(
                     .filter(Boolean);
             }
 
-            const solvedDate = toMidnightUTC(new Date());
+            // Use client-provided date if available (handles timezone correctly)
+            // Otherwise fall back to server time
+            const solvedDate = clientDate
+                ? toMidnightUTC(clientDate)
+                : toMidnightUTC(new Date());
             const revision3Date = addDays(solvedDate, 3);
             const revision10Date = addDays(solvedDate, 10);
 

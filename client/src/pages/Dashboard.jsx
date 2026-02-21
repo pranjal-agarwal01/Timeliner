@@ -51,7 +51,8 @@ export default function Dashboard() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            await addQuestion({ title, link, tags, notes, difficulty });
+            const localDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+            await addQuestion({ title, link, tags, notes, difficulty, solvedDate: localDate });
             toast.success('Added & scheduled! 🎯');
             setTitle('');
             setLink('');

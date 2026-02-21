@@ -22,7 +22,10 @@ async function handleAddQuestion(data) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${stored.token}`,
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify({
+                ...data,
+                solvedDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD in user's local timezone
+            }),
         });
 
         const result = await res.json();
