@@ -13,6 +13,10 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const today = formatDate(new Date());
 
+    // Date navigation
+    const [selectedDate, setSelectedDate] = useState(today);
+    const isToday = selectedDate === today;
+
     // Form state
     const [title, setTitle] = useState('');
     const [link, setLink] = useState('');
@@ -29,7 +33,7 @@ export default function Dashboard() {
     const fetchDue = useCallback(async () => {
         try {
             setLoadingDue(true);
-            const res = await getTodayQuestions(today);
+            const res = await getTodayQuestions(selectedDate);
             setDay3(res.data.day3);
             setDay10(res.data.day10);
         } catch (err) {
@@ -37,7 +41,7 @@ export default function Dashboard() {
         } finally {
             setLoadingDue(false);
         }
-    }, [today]);
+    }, [selectedDate]);
 
     useEffect(() => {
         fetchDue();
@@ -182,9 +186,32 @@ export default function Dashboard() {
                 {/* Right: Due Today */}
                 <section className="card due-card">
                     <h3 className="card-title">
-                        <span className="card-icon">📅</span> Due Today
+                        <span className="card-icon">📅</span> {isToday ? 'Due Today' : `Due on ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
                         {totalDue > 0 && <span className="count-badge">{totalDue}</span>}
                     </h3>
+
+                    {/* Date Navigation */}
+                    <div className="date-nav">
+                        <button className="btn btn-ghost btn-sm" onClick={() => {
+                            const d = new Date(selectedDate + 'T00:00:00');
+                            d.setDate(d.getDate() - 1);
+                            setSelectedDate(formatDate(d));
+                        }}>← Prev</button>
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            className="date-input"
+                        />
+                        <button className="btn btn-ghost btn-sm" onClick={() => {
+                            const d = new Date(selectedDate + 'T00:00:00');
+                            d.setDate(d.getDate() + 1);
+                            setSelectedDate(formatDate(d));
+                        }}>Next →</button>
+                        {!isToday && (
+                            <button className="btn btn-primary btn-sm" onClick={() => setSelectedDate(today)}>Today</button>
+                        )}
+                    </div>
 
                     {loadingDue ? (
                         <div className="loading-state">
@@ -193,8 +220,8 @@ export default function Dashboard() {
                     ) : totalDue === 0 ? (
                         <div className="empty-state">
                             <div className="empty-icon">🎉</div>
-                            <p>No revisions due today!</p>
-                            <p className="empty-sub">You&apos;re all caught up.</p>
+                            <p>No revisions due {isToday ? 'today' : 'on this date'}!</p>
+                            <p className="empty-sub">{isToday ? "You're all caught up." : 'Try another date.'}</p>
                         </div>
                     ) : (
                         <div className="due-list">

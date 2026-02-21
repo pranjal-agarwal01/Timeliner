@@ -103,13 +103,16 @@ a:hover {
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(124, 58, 237, 0.3);
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(124, 58, 237, 0.5);
 }
@@ -145,10 +148,12 @@ a:hover {
   color: #fff;
   box-shadow: 0 2px 16px var(--accent-glow);
 }
+
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 24px rgba(124, 58, 237, 0.4);
 }
+
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
 }
@@ -158,6 +163,7 @@ a:hover {
   color: #fff;
   box-shadow: 0 2px 12px rgba(16, 185, 129, 0.2);
 }
+
 .btn-accent:hover:not(:disabled) {
   background: #0ea572;
   transform: translateY(-1px);
@@ -168,6 +174,7 @@ a:hover {
   color: var(--text-secondary);
   border: 1px solid var(--border);
 }
+
 .btn-ghost:hover:not(:disabled) {
   background: var(--bg-glass);
   color: var(--text-primary);
@@ -180,6 +187,7 @@ a:hover {
   border: 1px solid var(--border);
   backdrop-filter: blur(8px);
 }
+
 .btn-glass:hover:not(:disabled) {
   background: rgba(124, 58, 237, 0.12);
   border-color: var(--border-strong);
@@ -393,7 +401,9 @@ textarea {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ─── States ───────────────────────────────────────────────────────────────── */
@@ -456,6 +466,7 @@ textarea {
     opacity: 0;
     transform: translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -650,6 +661,41 @@ textarea {
   flex-wrap: wrap;
   gap: 0.35rem;
   margin-top: 0.2rem;
+}
+
+/* Date Navigator */
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.date-input {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--text-primary);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.date-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  outline: none;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
 }
 
 .due-item-notes {
