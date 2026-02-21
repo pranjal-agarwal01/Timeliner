@@ -95,9 +95,9 @@ export default function Dashboard() {
             {/* Top Bar */}
             <header className="topbar">
                 <div className="topbar-left">
-                    <h2 className="brand">
+                    <Link to="/" className="brand">
                         <span className="brand-icon">📋</span> DSA Tracker
-                    </h2>
+                    </Link>
                 </div>
                 <div className="topbar-center">
                     <span className="today-badge">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
