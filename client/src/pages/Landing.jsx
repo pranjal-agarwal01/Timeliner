@@ -13,6 +13,7 @@ export default function Landing() {
                         <span className="brand-icon">📋</span> DSA Tracker
                     </div>
                     <div className="landing-nav-links">
+                        <a href="#contact" className="btn btn-ghost">Contact Us</a>
                         {user ? (
                             <Link to="/dashboard" className="btn btn-primary">
                                 Go to Dashboard →
@@ -152,9 +153,33 @@ export default function Landing() {
                 </div>
             </section>
 
+            {/* Contact */}
+            <section className="contact-section" id="contact">
+                <h2 className="section-title">Get In Touch</h2>
+                <p className="section-desc">Have feedback, questions, or just want to say hi?</p>
+                <div className="contact-cards">
+                    <a href="mailto:agarwalpranjal2006@gmail.com" className="contact-card" target="_blank" rel="noopener noreferrer">
+                        <div className="contact-icon">✉️</div>
+                        <h3>Email</h3>
+                        <p>agarwalpranjal2006@gmail.com</p>
+                    </a>
+                    <a href="https://wa.me/918532012613" className="contact-card" target="_blank" rel="noopener noreferrer">
+                        <div className="contact-icon">💬</div>
+                        <h3>WhatsApp</h3>
+                        <p>Send a message directly</p>
+                    </a>
+                </div>
+            </section>
+
             {/* Footer */}
             <footer className="landing-footer">
-                <p>Built with 💜 for DSA Enthusiasts</p>
+                <p>
+                    Built with 💜 for DSA Enthusiasts by <strong>Pranjal Agarwal</strong>
+                    {' '}
+                    <a href="https://www.linkedin.com/in/pranjal-agarwal01/" target="_blank" rel="noopener noreferrer" className="footer-linkedin" title="LinkedIn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
+                    </a>
+                </p>
             </footer>
         </div>
     );

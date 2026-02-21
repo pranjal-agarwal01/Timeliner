@@ -1173,6 +1173,78 @@ textarea {
   font-size: 0.82rem;
 }
 
+.landing-footer strong {
+  color: var(--text-primary);
+}
+
+.footer-linkedin {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 0.3rem;
+  color: var(--accent-light);
+  transition: color var(--transition), transform var(--transition);
+}
+
+.footer-linkedin:hover {
+  color: #0a66c2;
+  transform: scale(1.15);
+}
+
+/* Contact Section */
+.contact-section {
+  padding: 5rem 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.contact-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
+  transition: all var(--transition);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.contact-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow);
+  color: inherit;
+}
+
+.contact-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.contact-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.35rem;
+}
+
+.contact-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -1244,6 +1316,10 @@ textarea {
   }
 
   .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-cards {
     grid-template-columns: 1fr;
   }
 
