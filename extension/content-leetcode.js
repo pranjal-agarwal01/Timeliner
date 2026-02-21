@@ -94,34 +94,21 @@
         btn.disabled = true;
 
         try {
-            const { token, serverUrl } = await chrome.storage.local.get(['token', 'serverUrl']);
-
-            if (!token || !serverUrl) {
-                btn.innerHTML = '⚠️ Login in extension first!';
-                setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2500);
-                return;
-            }
-
             const data = extractProblemData();
 
-            const res = await fetch(`${serverUrl}/api/questions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
+            // Send to background worker (avoids CORS — background has chrome-extension:// origin)
+            const response = await chrome.runtime.sendMessage({
+                type: 'ADD_QUESTION',
+                data: {
                     title: data.title,
                     link: data.link,
                     difficulty: data.difficulty,
                     tags: data.tags.join(', '),
                     notes: '',
-                }),
+                },
             });
 
-            const result = await res.json();
-
-            if (res.ok) {
+            if (response.success) {
                 btn.innerHTML = '✅ Added & Scheduled!';
                 btn.classList.add('dsa-tracker-success');
                 setTimeout(() => {
@@ -130,7 +117,7 @@
                     btn.disabled = false;
                 }, 3000);
             } else {
-                throw new Error(result.message || 'Failed');
+                throw new Error(response.error || 'Failed');
             }
         } catch (err) {
             btn.innerHTML = `❌ ${err.message}`;
