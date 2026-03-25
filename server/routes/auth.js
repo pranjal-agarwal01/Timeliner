@@ -1,12 +1,30 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { body } = require("express-validator");
 const validate = require("../middleware/validate");
 const User = require("../models/User");
 const generateOTP = require("../utils/generateOTP");
 const sendEmail = require("../utils/sendEmail");
+
+// ─── HMAC OTP Helpers ─────────────────────────────────────────────────────────
+// Use HMAC-SHA256 instead of bcrypt for short-lived OTPs.
+// bcrypt adds 100ms+ per hash/compare; HMAC is <1ms and still cryptographically secure.
+
+function hashOTP(otp) {
+    return crypto
+        .createHmac("sha256", process.env.JWT_SECRET)
+        .update(otp)
+        .digest("hex");
+}
+
+function verifyOTPHash(otp, hash) {
+    const expected = hashOTP(otp);
+    // Constant-time comparison to prevent timing attacks
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(hash));
+}
 
 // ─── Register ────────────────────────────────────────────────────────────────
 router.post(
@@ -22,40 +40,48 @@ router.post(
         try {
             const { email, password } = req.body;
 
-            // Check for existing user
+            // Check for existing verified user
             const existing = await User.findOne({ email });
             if (existing) {
-                return res.status(409).json({ message: "Email already registered" });
+                if (existing.isVerified) {
+                    return res.status(409).json({ message: "Email already registered" });
+                }
+                // Unverified user exists — delete and let them re-register cleanly
+                await User.deleteOne({ email });
             }
 
-            // Hash password
-            const passwordHash = await bcrypt.hash(password, 12);
-
-            // Generate and hash OTP
+            // Generate OTP
             const otp = generateOTP();
-            const otpHash = await bcrypt.hash(otp, 10);
+            const otpHash = hashOTP(otp);
             const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
 
-            // Create user
+            // Send email FIRST — if this fails, no user is created (fixes race condition)
+            try {
+                await sendEmail(
+                    email,
+                    "Verify your Timeliner account",
+                    `<div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:24px;">
+          <h2 style="color:#7c3aed;">Timeliner</h2>
+          <p>Your verification code is:</p>
+          <div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#7c3aed;padding:16px 0;">${otp}</div>
+          <p style="color:#888;">This code expires in 10 minutes. Do not share it with anyone.</p>
+        </div>`
+                );
+            } catch (emailErr) {
+                console.error("SMTP error during register:", emailErr.message);
+                return res.status(503).json({ message: "Could not send verification email. Please try again." });
+            }
+
+            // Hash password and create user only after email succeeds
+            const passwordHash = await bcrypt.hash(password, 12);
             await User.create({
                 email,
                 passwordHash,
                 otpHash,
                 otpExpiresAt,
                 otpLastSentAt: new Date(),
+                otpAttempts: 0,
             });
-
-            // Send OTP email
-            await sendEmail(
-                email,
-                "Verify your DSA Tracker account",
-                `<div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:24px;">
-          <h2 style="color:#7c3aed;">DSA Revision Tracker</h2>
-          <p>Your verification code is:</p>
-          <div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#7c3aed;padding:16px 0;">${otp}</div>
-          <p style="color:#888;">This code expires in 10 minutes.</p>
-        </div>`
-            );
 
             res.status(201).json({ message: "OTP sent to your email" });
         } catch (err) {
@@ -94,15 +120,29 @@ router.post(
                 return res.status(400).json({ message: "OTP expired. Request a new one." });
             }
 
-            const isMatch = await bcrypt.compare(otp, user.otpHash);
-            if (!isMatch) {
-                return res.status(400).json({ message: "Invalid OTP" });
+            // Brute-force protection — max 5 attempts
+            if (user.otpAttempts >= 5) {
+                return res.status(429).json({ message: "Too many attempts. Please request a new OTP." });
             }
 
-            // Mark verified, clear OTP fields
+            const isMatch = verifyOTPHash(otp, user.otpHash);
+            if (!isMatch) {
+                user.otpAttempts = (user.otpAttempts || 0) + 1;
+                await user.save();
+                const remaining = 5 - user.otpAttempts;
+                return res.status(400).json({
+                    message: remaining > 0
+                        ? `Invalid OTP. ${remaining} attempt${remaining !== 1 ? "s" : ""} remaining.`
+                        : "Too many attempts. Please request a new OTP.",
+                });
+            }
+
+            // Mark verified, clear all OTP fields
             user.isVerified = true;
             user.otpHash = null;
             user.otpExpiresAt = null;
+            user.otpLastSentAt = null;
+            user.otpAttempts = 0;
             await user.save();
 
             res.json({ message: "Email verified successfully" });
@@ -190,25 +230,32 @@ router.post(
                     .json({ message: "Please wait 1 minute before requesting again" });
             }
 
-            // Generate new OTP
+            // Generate new OTP using HMAC (fast, <1ms)
             const otp = generateOTP();
-            const otpHash = await bcrypt.hash(otp, 10);
+            const otpHash = hashOTP(otp);
+
+            // Send email BEFORE updating DB
+            try {
+                await sendEmail(
+                    email,
+                    "Your new verification code — Timeliner",
+                    `<div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:24px;">
+          <h2 style="color:#7c3aed;">Timeliner</h2>
+          <p>Your new verification code is:</p>
+          <div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#7c3aed;padding:16px 0;">${otp}</div>
+          <p style="color:#888;">This code expires in 10 minutes. Do not share it with anyone.</p>
+        </div>`
+                );
+            } catch (emailErr) {
+                console.error("SMTP error during resend:", emailErr.message);
+                return res.status(503).json({ message: "Could not send email. Please try again." });
+            }
 
             user.otpHash = otpHash;
             user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
             user.otpLastSentAt = new Date();
+            user.otpAttempts = 0; // Reset attempt counter on resend
             await user.save();
-
-            await sendEmail(
-                email,
-                "Your new verification code — DSA Tracker",
-                `<div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:24px;">
-          <h2 style="color:#7c3aed;">DSA Revision Tracker</h2>
-          <p>Your new verification code is:</p>
-          <div style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#7c3aed;padding:16px 0;">${otp}</div>
-          <p style="color:#888;">This code expires in 10 minutes.</p>
-        </div>`
-            );
 
             res.json({ message: "OTP resent" });
         } catch (err) {

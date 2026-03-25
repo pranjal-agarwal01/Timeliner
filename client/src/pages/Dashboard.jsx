@@ -13,11 +13,9 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const today = formatDate(new Date());
 
-    // Date navigation
     const [selectedDate, setSelectedDate] = useState(today);
     const isToday = selectedDate === today;
 
-    // Form state
     const [title, setTitle] = useState('');
     const [link, setLink] = useState('');
     const [tags, setTags] = useState('');
@@ -25,7 +23,6 @@ export default function Dashboard() {
     const [difficulty, setDifficulty] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
-    // Due state
     const [day3, setDay3] = useState([]);
     const [day10, setDay10] = useState([]);
     const [loadingDue, setLoadingDue] = useState(true);
@@ -36,29 +33,25 @@ export default function Dashboard() {
             const res = await getTodayQuestions(selectedDate);
             setDay3(res.data.day3);
             setDay10(res.data.day10);
-        } catch (err) {
+        } catch {
             toast.error('Failed to load due revisions');
         } finally {
             setLoadingDue(false);
         }
     }, [selectedDate]);
 
-    useEffect(() => {
-        fetchDue();
-    }, [fetchDue]);
+    useEffect(() => { fetchDue(); }, [fetchDue]);
 
     const handleAdd = async (e) => {
         e.preventDefault();
+        if (!title.trim()) { toast.error('Title is required'); return; }
+        if (!link.trim()) { toast.error('Link is required'); return; }
         setSubmitting(true);
         try {
-            const localDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
-            await addQuestion({ title, link, tags, notes, difficulty, solvedDate: localDate });
+            const localDate = new Date().toLocaleDateString('en-CA');
+            await addQuestion({ title: title.trim(), link: link.trim(), tags: tags.trim(), notes: notes.trim(), difficulty, solvedDate: localDate });
             toast.success('Added & scheduled! 🎯');
-            setTitle('');
-            setLink('');
-            setTags('');
-            setNotes('');
-            setDifficulty('');
+            setTitle(''); setLink(''); setTags(''); setNotes(''); setDifficulty('');
             fetchDue();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to add question');
@@ -69,27 +62,24 @@ export default function Dashboard() {
 
     const handleRevise = async (id, type) => {
         try {
-            if (type === 3) {
-                await markRevision3(id);
-            } else {
-                await markRevision10(id);
-            }
+            if (type === 3) await markRevision3(id);
+            else await markRevision10(id);
             toast.success('Revision marked! ✅');
             fetchDue();
-        } catch (err) {
+        } catch {
             toast.error('Failed to mark revision');
         }
     };
 
     const handleLogout = async () => {
-        try {
-            await apiLogout();
-        } catch { }
+        try { await apiLogout(); } catch { }
         logoutUser();
         navigate('/login');
     };
 
     const totalDue = day3.length + day10.length;
+    const userEmail = user?.email || '';
+    const userInitial = userEmail ? userEmail[0].toUpperCase() : '?';
 
     return (
         <div className="dashboard">
@@ -97,18 +87,22 @@ export default function Dashboard() {
             <header className="topbar">
                 <div className="topbar-left">
                     <Link to="/" className="brand">
-                        <span className="brand-icon">📋</span> DSA Tracker
+                        <div className="brand-icon">📋</div>
+                        Timeliner
                     </Link>
                 </div>
                 <div className="topbar-center">
-                    <span className="today-badge">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    <span className="today-badge">
+                        {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
                 </div>
                 <div className="topbar-right">
                     <Link to="/completed" className="btn btn-glass">
                         ✅ Completed
                     </Link>
+                    <div className="user-avatar" title={userEmail}>{userInitial}</div>
                     <button className="btn btn-ghost" onClick={handleLogout}>
-                        Logout
+                        Sign Out
                     </button>
                 </div>
             </header>
@@ -118,11 +112,11 @@ export default function Dashboard() {
                 {/* Left: Add Form */}
                 <section className="card add-card">
                     <h3 className="card-title">
-                        <span className="card-icon">➕</span> Add Today&apos;s Question
+                        <span className="card-icon">✏️</span> Log New Question
                     </h3>
                     <form onSubmit={handleAdd} className="add-form">
                         <div className="form-group">
-                            <label htmlFor="q-title">Title *</label>
+                            <label htmlFor="q-title">Problem Title *</label>
                             <input
                                 id="q-title"
                                 type="text"
@@ -130,10 +124,11 @@ export default function Dashboard() {
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 required
+                                maxLength={200}
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="q-link">Link *</label>
+                            <label htmlFor="q-link">Problem Link *</label>
                             <input
                                 id="q-link"
                                 type="url"
@@ -149,7 +144,7 @@ export default function Dashboard() {
                                 <input
                                     id="q-tags"
                                     type="text"
-                                    placeholder="Array, HashMap"
+                                    placeholder="Array, HashMap, DP"
                                     value={tags}
                                     onChange={(e) => setTags(e.target.value)}
                                 />
@@ -169,17 +164,21 @@ export default function Dashboard() {
                             </div>
                         </div>
                         <div className="form-group">
-                            <label htmlFor="q-notes">Notes</label>
+                            <label htmlFor="q-notes">Notes & Approach</label>
                             <textarea
                                 id="q-notes"
-                                placeholder="Key insights, approach used..."
+                                placeholder="Key insights, approach used, time/space complexity..."
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 rows={3}
+                                maxLength={1000}
                             ></textarea>
+                            {notes.length > 900 && (
+                                <span className="char-count">{notes.length}/1000</span>
+                            )}
                         </div>
                         <button type="submit" className="btn btn-primary btn-full" disabled={submitting}>
-                            {submitting ? <span className="spinner-sm"></span> : '🎯 Add & Schedule'}
+                            {submitting ? <span className="spinner-sm"></span> : '🎯 Add & Schedule Revisions'}
                         </button>
                     </form>
                 </section>
@@ -187,7 +186,8 @@ export default function Dashboard() {
                 {/* Right: Due Today */}
                 <section className="card due-card">
                     <h3 className="card-title">
-                        <span className="card-icon">📅</span> {isToday ? 'Due Today' : `Due on ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                        <span className="card-icon">📅</span>
+                        {isToday ? 'Due Today' : `Due on ${new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
                         {totalDue > 0 && <span className="count-badge">{totalDue}</span>}
                     </h3>
 
@@ -217,12 +217,13 @@ export default function Dashboard() {
                     {loadingDue ? (
                         <div className="loading-state">
                             <div className="spinner"></div>
+                            <span>Loading revisions...</span>
                         </div>
                     ) : totalDue === 0 ? (
                         <div className="empty-state">
                             <div className="empty-icon">🎉</div>
-                            <p>No revisions due {isToday ? 'today' : 'on this date'}!</p>
-                            <p className="empty-sub">{isToday ? "You're all caught up." : 'Try another date.'}</p>
+                            <p style={{ fontWeight: 700 }}>All clear!</p>
+                            <p className="empty-sub">{isToday ? "No revisions due today. Keep solving!" : 'No revisions on this date. Try another.'}</p>
                         </div>
                     ) : (
                         <div className="due-list">
@@ -259,7 +260,6 @@ export default function Dashboard() {
 function DueItem({ question, type, onRevise }) {
     const [marking, setMarking] = useState(false);
     const [confirming, setConfirming] = useState(false);
-    // Active Recall: 'collapsed' → 'recall' → 'revealed'
     const [phase, setPhase] = useState('collapsed');
     const [recallText, setRecallText] = useState('');
 
@@ -275,13 +275,18 @@ function DueItem({ question, type, onRevise }) {
         return (
             <div className="due-item due-item-recall">
                 <div className="due-item-info">
-                    <a href={question.link} target="_blank" rel="noopener noreferrer" className="due-item-title">{question.title}</a>
+                    <a href={question.link} target="_blank" rel="noopener noreferrer" className="due-item-title">
+                        {question.title}
+                    </a>
                     <div className="due-item-meta">
                         {question.difficulty && (
                             <span className={`diff-badge diff-${question.difficulty.toLowerCase()}`}>
                                 {question.difficulty}
                             </span>
                         )}
+                        {question.tags?.slice(0, 2).map((tag) => (
+                            <span key={tag} className="tag-badge">{tag}</span>
+                        ))}
                     </div>
                 </div>
                 <button
@@ -299,7 +304,9 @@ function DueItem({ question, type, onRevise }) {
         return (
             <div className="due-item due-item-expanded">
                 <div className="recall-header">
-                    <a href={question.link} target="_blank" rel="noopener noreferrer" className="due-item-title">{question.title}</a>
+                    <a href={question.link} target="_blank" rel="noopener noreferrer" className="due-item-title">
+                        {question.title} ↗
+                    </a>
                     {question.difficulty && (
                         <span className={`diff-badge diff-${question.difficulty.toLowerCase()}`}>
                             {question.difficulty}
@@ -309,7 +316,7 @@ function DueItem({ question, type, onRevise }) {
                 <p className="recall-prompt">💡 Can you explain the approach from memory?</p>
                 <textarea
                     className="recall-input"
-                    placeholder="Type your recalled approach here... (e.g. Use a hashmap to store complements, iterate once...)"
+                    placeholder="Type your recalled approach... (e.g. Use a hashmap to store complements, iterate once...)"
                     value={recallText}
                     onChange={(e) => setRecallText(e.target.value)}
                     rows={3}
@@ -348,13 +355,13 @@ function DueItem({ question, type, onRevise }) {
             </div>
             {recallText && (
                 <div className="recall-answer">
-                    <span className="recall-answer-label">Your recall:</span>
+                    <span className="recall-answer-label">Your Recall</span>
                     <p>{recallText}</p>
                 </div>
             )}
             {question.notes && (
                 <div className="recall-notes">
-                    <span className="recall-answer-label">Original notes:</span>
+                    <span className="recall-answer-label">Original Notes</span>
                     <p>{question.notes}</p>
                 </div>
             )}
@@ -371,14 +378,14 @@ function DueItem({ question, type, onRevise }) {
                             onClick={handleConfirm}
                             disabled={marking}
                         >
-                            {marking ? '...' : '✓ Yes, mark done'}
+                            {marking ? <span className="spinner-sm"></span> : '✓ Yes, mark done'}
                         </button>
                         <button
                             className="btn btn-ghost btn-sm"
                             onClick={() => setConfirming(false)}
                             disabled={marking}
                         >
-                            ✗ No
+                            ✗ Cancel
                         </button>
                     </div>
                 ) : (

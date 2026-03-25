@@ -10,21 +10,25 @@ export default function Landing() {
             <nav className="landing-nav">
                 <div className="landing-nav-inner">
                     <div className="brand">
-                        <span className="brand-icon">📋</span> DSA Tracker
+                        <div className="brand-icon">📋</div>
+                        Timeliner
+                        <span className="brand-dot"></span>
                     </div>
                     <div className="landing-nav-links">
-                        <a href="#contact" className="btn btn-ghost">Contact Us</a>
+                        <a href="#features" className="btn btn-ghost">Features</a>
+                        <a href="#how-it-works" className="btn btn-ghost">How it works</a>
+                        <a href="#contact" className="btn btn-ghost">Contact</a>
                         {user ? (
                             <Link to="/dashboard" className="btn btn-primary">
-                                Go to Dashboard →
+                                Dashboard →
                             </Link>
                         ) : (
                             <>
                                 <Link to="/login" className="btn btn-ghost">
-                                    Login
+                                    Sign In
                                 </Link>
                                 <Link to="/register" className="btn btn-primary">
-                                    Get Started
+                                    Get Started Free
                                 </Link>
                             </>
                         )}
@@ -35,23 +39,27 @@ export default function Landing() {
             {/* Hero */}
             <section className="hero">
                 <div className="hero-glow"></div>
+                <div className="hero-glow-2"></div>
                 <div className="hero-content">
-                    <span className="hero-badge">🔥 Spaced Repetition for DSA</span>
+                    <span className="hero-badge">
+                        <span className="hero-badge-dot"></span>
+                        Spaced Repetition for DSA
+                    </span>
                     <h1 className="hero-title">
-                        Never Forget a<br />
-                        <span className="hero-gradient">DSA Solution</span> Again
+                        Master Every DSA<br />
+                        <span className="hero-gradient">Problem You Solve</span>
                     </h1>
                     <p className="hero-desc">
                         Track your solved problems and get automatic revision reminders
                         on <strong>Day 3</strong> and <strong>Day 10</strong> — powered by the
-                        proven 1-3-10 spaced repetition rule.
+                        proven 1-3-10 spaced repetition method.
                     </p>
                     <div className="hero-actions">
                         <Link to={user ? "/dashboard" : "/register"} className="btn btn-primary btn-lg">
                             🎯 Start Tracking Free
                         </Link>
-                        <a href="#how-it-works" className="btn btn-glass btn-lg">
-                            Learn More ↓
+                        <a href="#how-it-works" className="btn btn-ghost btn-lg">
+                            See how it works ↓
                         </a>
                     </div>
                     <div className="hero-stats">
@@ -75,39 +83,23 @@ export default function Landing() {
 
             {/* Features */}
             <section className="features" id="features">
-                <h2 className="section-title">Why DSA Tracker?</h2>
+                <h2 className="section-title">Why Timeliner?</h2>
                 <p className="section-desc">Built for serious programmers who want to ace interviews</p>
                 <div className="features-grid">
-                    <div className="feature-card">
-                        <div className="feature-icon">📅</div>
-                        <h3>Smart Scheduling</h3>
-                        <p>Auto-schedules Day 3 and Day 10 revisions the moment you add a question. No manual tracking needed.</p>
-                    </div>
-                    <div className="feature-card">
-                        <div className="feature-icon">🧠</div>
-                        <h3>Science-Backed</h3>
-                        <p>Uses the 1-3-10 spaced repetition method — proven to boost long-term retention by up to 200%.</p>
-                    </div>
-                    <div className="feature-card">
-                        <div className="feature-icon">🏷️</div>
-                        <h3>Tag & Organize</h3>
-                        <p>Categorize by difficulty, topics, and personal notes. Search and filter your entire question bank.</p>
-                    </div>
-                    <div className="feature-card">
-                        <div className="feature-icon">🔒</div>
-                        <h3>Secure & Private</h3>
-                        <p>Email OTP verification, JWT auth, and encrypted passwords. Your data stays yours.</p>
-                    </div>
-                    <div className="feature-card">
-                        <div className="feature-icon">📊</div>
-                        <h3>Track Progress</h3>
-                        <p>See completed revisions at a glance. Filter by difficulty, browse by date, and celebrate your wins.</p>
-                    </div>
-                    <div className="feature-card">
-                        <div className="feature-icon">⚡</div>
-                        <h3>Lightning Fast</h3>
-                        <p>Minimal, focused UI. Add a question in seconds, mark revisions in one click. No clutter.</p>
-                    </div>
+                    {[
+                        { icon: '📅', title: 'Smart Scheduling', desc: 'Auto-schedules Day 3 and Day 10 revisions the moment you add a question. No manual tracking needed.' },
+                        { icon: '🧠', title: 'Science-Backed', desc: 'Uses the 1-3-10 spaced repetition method — proven to boost long-term retention by up to 200%.' },
+                        { icon: '💡', title: 'Active Recall', desc: 'Before revealing your notes, type out what you remember from the problem. Scientifically improves retention.' },
+                        { icon: '🏷️', title: 'Tag & Organize', desc: 'Categorize by difficulty, topics, and personal notes. Search and filter your entire question bank.' },
+                        { icon: '🔒', title: 'Secure & Private', desc: 'Email OTP verification, JWT auth, and encrypted passwords. Your data stays yours.' },
+                        { icon: '⚡', title: 'Lightning Fast', desc: 'Minimal, focused UI. Add a question in seconds, mark revisions in one click. No clutter.' },
+                    ].map(({ icon, title, desc }) => (
+                        <div className="feature-card" key={title}>
+                            <div className="feature-icon-wrap">{icon}</div>
+                            <h3>{title}</h3>
+                            <p>{desc}</p>
+                        </div>
+                    ))}
                 </div>
             </section>
 
@@ -119,8 +111,8 @@ export default function Landing() {
                     <div className="step">
                         <div className="step-number">1</div>
                         <div className="step-content">
-                            <h3>Solve & Add</h3>
-                            <p>Solve a DSA problem on LeetCode, GFG, or anywhere. Add it to your tracker with the title, link, tags, and notes about your approach.</p>
+                            <h3>Solve &amp; Add</h3>
+                            <p>Solve a DSA problem on LeetCode, GFG, or anywhere. Add it to your tracker with the title, link, tags, difficulty, and your approach notes.</p>
                         </div>
                     </div>
                     <div className="step-connector"></div>
@@ -135,8 +127,8 @@ export default function Landing() {
                     <div className="step">
                         <div className="step-number">3</div>
                         <div className="step-content">
-                            <h3>Mark & Master</h3>
-                            <p>After revising, mark it done. Once both Day 3 and Day 10 revisions are complete, the question moves to your <strong>Completed</strong> list. 🎉</p>
+                            <h3>Recall &amp; Master</h3>
+                            <p>Use the Active Recall feature — write what you remember, then reveal your original notes. Once both revisions are done, the question moves to <strong>Completed</strong>. 🎉</p>
                         </div>
                     </div>
                 </div>
@@ -146,8 +138,8 @@ export default function Landing() {
             <section className="cta-section">
                 <div className="cta-card">
                     <h2>Ready to Ace Your Next Interview?</h2>
-                    <p>Join and start building your revision habit today. It's completely free.</p>
-                    <Link to={user ? "/dashboard" : "/register"} className="btn btn-primary btn-lg">
+                    <p>Start building your revision habit today. Join and track every problem you solve for free.</p>
+                    <Link to={user ? "/dashboard" : "/register"} className="btn-cta">
                         🚀 Get Started Now
                     </Link>
                 </div>

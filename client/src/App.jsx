@@ -17,17 +17,19 @@ export default function App() {
                     position="top-right"
                     toastOptions={{
                         style: {
-                            background: '#1e1b2e',
-                            color: '#e2e0f0',
-                            border: '1px solid rgba(124, 58, 237, 0.3)',
+                            background: '#ffffff',
+                            color: '#111827',
+                            border: '1.5px solid #e5e7eb',
                             borderRadius: '12px',
                             fontFamily: 'Inter, sans-serif',
+                            fontSize: '0.875rem',
+                            boxShadow: '0 4px 24px rgba(79,70,229,0.1), 0 1px 4px rgba(0,0,0,0.06)',
                         },
                         success: {
-                            iconTheme: { primary: '#10b981', secondary: '#1e1b2e' },
+                            iconTheme: { primary: '#059669', secondary: '#fff' },
                         },
                         error: {
-                            iconTheme: { primary: '#ef4444', secondary: '#1e1b2e' },
+                            iconTheme: { primary: '#dc2626', secondary: '#fff' },
                         },
                     }}
                 />

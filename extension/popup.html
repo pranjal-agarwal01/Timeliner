@@ -4,8 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DSA Tracker</title>
+    <title>Timeliner</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -14,10 +16,11 @@
 
         body {
             width: 320px;
-            font-family: 'Segoe UI', -apple-system, sans-serif;
-            background: #0a0a12;
-            color: #e8e6f0;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #f0f4ff;
+            color: #111827;
             padding: 1.25rem;
+            -webkit-font-smoothing: antialiased;
         }
 
         .header {
@@ -25,22 +28,29 @@
             margin-bottom: 1.25rem;
         }
 
-        .logo {
-            font-size: 1.5rem;
-            margin-bottom: 0.25rem;
+        .logo-mark {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin: 0 auto 0.6rem;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
         }
 
         .header h1 {
             font-size: 1.1rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #a78bfa, #c4b5fd);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #111827;
+            letter-spacing: -0.02em;
         }
 
         .header p {
             font-size: 0.75rem;
-            color: #9896a8;
+            color: #6b7280;
             margin-top: 0.2rem;
         }
 
@@ -50,17 +60,9 @@
             display: none;
         }
 
-        body.is-logged-in .logged-in {
-            display: block;
-        }
-
-        body.is-logged-in .login-form {
-            display: none;
-        }
-
-        body:not(.is-logged-in) .login-form {
-            display: block;
-        }
+        body.is-logged-in .logged-in { display: block; }
+        body.is-logged-in .login-form { display: none; }
+        body:not(.is-logged-in) .login-form { display: block; }
 
         /* Form */
         .form-group {
@@ -70,28 +72,33 @@
         .form-group label {
             display: block;
             font-size: 0.7rem;
-            font-weight: 600;
-            color: #9896a8;
+            font-weight: 700;
+            color: #4b5563;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
-            margin-bottom: 0.25rem;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.3rem;
         }
 
         input {
             width: 100%;
             padding: 0.55rem 0.75rem;
-            background: rgba(18, 17, 31, 0.8);
-            border: 1px solid rgba(124, 58, 237, 0.15);
+            background: #ffffff;
+            border: 1.5px solid #e5e7eb;
             border-radius: 8px;
-            color: #e8e6f0;
+            color: #111827;
             font-size: 0.85rem;
+            font-family: inherit;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         input:focus {
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        input::placeholder {
+            color: #9ca3af;
         }
 
         /* Buttons */
@@ -103,89 +110,117 @@
             border-radius: 8px;
             font-family: inherit;
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
+            text-align: center;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #7c3aed, #6d28d9, #5b21b6);
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
             color: #fff;
-            box-shadow: 0 2px 16px rgba(124, 58, 237, 0.3);
+            box-shadow: 0 2px 10px rgba(79, 70, 229, 0.25);
         }
 
         .btn-primary:hover {
             transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
         }
 
         .btn-ghost {
             background: transparent;
-            color: #9896a8;
-            border: 1px solid rgba(124, 58, 237, 0.15);
+            color: #6b7280;
+            border: 1.5px solid #e5e7eb;
             margin-top: 0.5rem;
         }
 
         .btn-ghost:hover {
-            background: rgba(124, 58, 237, 0.06);
-            color: #e8e6f0;
+            background: #f3f4f6;
+            color: #111827;
+            border-color: #d1d5db;
         }
 
         /* Status */
         .status {
             text-align: center;
-            padding: 1rem;
+            padding: 0.75rem;
+            background: #ecfdf5;
+            border: 1.5px solid rgba(5, 150, 105, 0.2);
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
         }
 
         .status-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.75rem;
+            margin-bottom: 0.4rem;
         }
 
         .status p {
             font-size: 0.82rem;
-            color: #9896a8;
+            color: #4b5563;
+            font-weight: 600;
         }
 
         .status .email {
-            font-weight: 600;
-            color: #a78bfa;
-            margin-top: 0.25rem;
-            font-size: 0.85rem;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-top: 0.2rem;
+            font-size: 0.82rem;
+            word-break: break-all;
+        }
+
+        .status .hint {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.6rem;
+            font-weight: 400;
+            line-height: 1.4;
         }
 
         /* Server URL */
         .server-config {
             margin-bottom: 0.75rem;
-            padding: 0.5rem 0.65rem;
-            background: rgba(18, 17, 31, 0.5);
-            border: 1px solid rgba(124, 58, 237, 0.1);
-            border-radius: 6px;
+            padding: 0.55rem 0.65rem;
+            background: #fff;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
         }
 
         .server-config label {
             font-size: 0.65rem;
-            font-weight: 600;
-            color: #6b6980;
+            font-weight: 700;
+            color: #9ca3af;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.04em;
         }
 
         .server-config input {
             margin-top: 0.2rem;
             font-size: 0.78rem;
-            padding: 0.4rem 0.6rem;
+            padding: 0.35rem 0.55rem;
+            border-color: transparent;
+            background: transparent;
+        }
+
+        .server-config input:focus {
+            border-color: #4f46e5;
+            background: #fff;
         }
 
         .error {
-            color: #ef4444;
+            color: #dc2626;
             font-size: 0.78rem;
             text-align: center;
             margin-top: 0.5rem;
             display: none;
+            padding: 0.4rem 0.6rem;
+            background: #fef2f2;
+            border-radius: 6px;
+            border: 1px solid rgba(220, 38, 38, 0.15);
         }
 
         .success-msg {
-            color: #10b981;
+            color: #059669;
             font-size: 0.78rem;
             text-align: center;
             margin-top: 0.5rem;
@@ -195,9 +230,9 @@
 
 <body>
     <div class="header">
-        <div class="logo">📋</div>
-        <h1>DSA Tracker</h1>
-        <p>Auto-import questions from LeetCode & GFG</p>
+        <div class="logo-mark">📋</div>
+        <h1>Timeliner</h1>
+        <p>Auto-import from LeetCode, GFG &amp; TUF</p>
     </div>
 
     <!-- Login Form -->
@@ -215,7 +250,7 @@
                 <label>Password</label>
                 <input type="password" id="password" placeholder="••••••••" required />
             </div>
-            <button type="submit" class="btn btn-primary" id="login-btn">🔑 Login</button>
+            <button type="submit" class="btn btn-primary" id="login-btn">🔑 Sign In</button>
         </form>
         <div class="error" id="error-msg"></div>
     </div>
@@ -224,12 +259,11 @@
     <div class="logged-in">
         <div class="status">
             <div class="status-icon">✅</div>
-            <p>Connected & ready!</p>
+            <p>Connected &amp; ready!</p>
             <div class="email" id="user-email"></div>
-            <p style="margin-top: 0.75rem; font-size: 0.78rem;">Visit a LeetCode or GFG problem page to see the
-                <strong>➕ Add to DSA Tracker</strong> button.</p>
+            <p class="hint">Visit a LeetCode, GFG or TUF problem page to see the <strong>➕ Add to Timeliner</strong> button.</p>
         </div>
-        <button class="btn btn-ghost" id="logout-btn">Logout</button>
+        <button class="btn btn-ghost" id="logout-btn">Sign Out</button>
     </div>
 
     <script src="popup.js"></script>
