@@ -1,13 +1,31 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import Register from './pages/Register';
-import VerifyOTP from './pages/VerifyOTP';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Completed from './pages/Completed';
-import Landing from './pages/Landing';
+
+// Route-based code splitting — each page is a separate JS chunk.
+// Users only download what they actually navigate to.
+const Register  = lazy(() => import('./pages/Register'));
+const VerifyOTP = lazy(() => import('./pages/VerifyOTP'));
+const Login     = lazy(() => import('./pages/Login'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Completed = lazy(() => import('./pages/Completed'));
+const Landing   = lazy(() => import('./pages/Landing'));
+
+function PageSpinner() {
+    return (
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100vh',
+            background: 'var(--bg, #f8fafc)',
+        }}>
+            <div className="spinner" />
+        </div>
+    );
+}
 
 export default function App() {
     return (
@@ -33,29 +51,31 @@ export default function App() {
                         },
                     }}
                 />
-                <Routes>
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/verify-otp" element={<VerifyOTP />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <ProtectedRoute>
-                                <Dashboard />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/completed"
-                        element={
-                            <ProtectedRoute>
-                                <Completed />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route path="/" element={<Landing />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
+                <Suspense fallback={<PageSpinner />}>
+                    <Routes>
+                        <Route path="/register" element={<Register />} />
+                        <Route path="/verify-otp" element={<VerifyOTP />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route
+                            path="/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <Dashboard />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/completed"
+                            element={
+                                <ProtectedRoute>
+                                    <Completed />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="/" element={<Landing />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </Suspense>
             </BrowserRouter>
         </AuthProvider>
     );

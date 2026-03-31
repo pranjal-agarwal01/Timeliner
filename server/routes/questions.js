@@ -92,19 +92,22 @@ router.get(
             const targetDate = toMidnightUTC(dateStr);
             const nextDay = addDays(targetDate, 1);
 
+            // .lean() skips Mongoose document hydration — returns plain JS objects.
+            // Safe here because we never call .save() on these results.
+
             // Day 3 due
             const day3Due = await Question.find({
                 userId: req.userId,
                 revision3Date: { $gte: targetDate, $lt: nextDay },
                 revision3Done: false,
-            }).sort({ createdAt: -1 });
+            }).sort({ createdAt: -1 }).lean();
 
             // Day 10 due
             const day10Due = await Question.find({
                 userId: req.userId,
                 revision10Date: { $gte: targetDate, $lt: nextDay },
                 revision10Done: false,
-            }).sort({ createdAt: -1 });
+            }).sort({ createdAt: -1 }).lean();
 
             res.json({ day3: day3Due, day10: day10Due });
         } catch (err) {
@@ -189,10 +192,17 @@ router.get("/completed", auth, async (req, res) => {
     try {
         const { search, difficulty, tag, sort } = req.query;
 
+        // Pagination: default page 1, 20 items per page
+        const page  = Math.max(1, parseInt(req.query.page)  || 1);
+        const limit = Math.min(100, parseInt(req.query.limit) || 20);
+        const skip  = (page - 1) * limit;
+
         const filter = { userId: req.userId, completed: true };
 
         if (search) {
-            filter.title = { $regex: search, $options: "i" };
+            // $text uses the title text index — fast inverted-index lookup
+            // instead of a slow full-collection $regex scan
+            filter.$text = { $search: search };
         }
         if (difficulty) {
             filter.difficulty = difficulty;
@@ -205,9 +215,31 @@ router.get("/completed", auth, async (req, res) => {
         if (sort === "oldest") {
             sortOption = { completedAt: 1 };
         }
+        // When using $text search, also sort by text relevance score
+        if (search) {
+            sortOption = { score: { $meta: "textScore" }, ...sortOption };
+        }
 
-        const questions = await Question.find(filter).sort(sortOption);
-        res.json({ questions });
+        // .lean() for read-only query — skips Mongoose document hydration
+        const [questions, total] = await Promise.all([
+            Question.find(filter, search ? { score: { $meta: "textScore" } } : {})
+                .sort(sortOption)
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Question.countDocuments(filter),
+        ]);
+
+        res.json({
+            questions,
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit),
+                hasMore: page * limit < total,
+            },
+        });
     } catch (err) {
         console.error("Completed error:", err);
         res.status(500).json({ message: "Server error" });

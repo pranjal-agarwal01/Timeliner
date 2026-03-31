@@ -4,31 +4,48 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
+const compression = require("compression");
 
 const authRoutes = require("./routes/auth");
 const questionRoutes = require("./routes/questions");
 
 const app = express();
 
+// Trust Render's reverse proxy so express-rate-limit reads real client IPs
+// (without this, everyone shares one IP and the limiter fires for all users)
+app.set("trust proxy", 1);
+
 // ─── Middleware ───────────────────────────────────────────────────────────────
+// Compress all responses with gzip — reduces JSON payload sizes ~60-80%
+app.use(compression());
 app.use(express.json());
 app.use(cookieParser());
+
+// Build allowed origins list from comma-separated CLIENT_ORIGIN env var
+// e.g. CLIENT_ORIGIN=https://timeliner.vercel.app,https://timeliner-git-main.vercel.app
+const allowedOrigins = (process.env.CLIENT_ORIGIN || "http://localhost:5173")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+
 app.use(
     cors({
         origin: function (origin, callback) {
-            const allowed = process.env.CLIENT_ORIGIN || "http://localhost:5173";
-            // Allow: client origin, chrome extensions, and no-origin (e.g. Postman)
-            if (!origin || origin === allowed || origin.startsWith("chrome-extension://")) {
-                callback(null, true);
-            } else {
-                callback(new Error("Not allowed by CORS"));
+            // Allow no-origin requests (Postman, curl, Chrome extension)
+            if (!origin) return callback(null, true);
+            if (
+                allowedOrigins.includes(origin) ||
+                origin.startsWith("chrome-extension://")
+            ) {
+                return callback(null, true);
             }
+            callback(new Error(`CORS: origin ${origin} not allowed`));
         },
         credentials: true,
     })
 );
 
-// Global rate limiter
+// ─── Rate Limiters ───────────────────────────────────────────────────────────
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 min
     max: 200,
@@ -41,6 +58,8 @@ app.use(globalLimiter);
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
     message: { message: "Too many requests, please try again later" },
 });
 
@@ -48,7 +67,8 @@ const authLimiter = rateLimit({
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/questions", questionRoutes);
 
-// Health check
+// Health check — used by Render to verify the service is up
+// Also useful as a keep-alive ping target from external cron
 app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
@@ -72,7 +92,7 @@ mongoose
     .then(() => {
         console.log("✅ MongoDB connected");
         app.listen(PORT, () => {
-            console.log(`🚀 Server running on http://localhost:${PORT}`);
+            console.log(`🚀 Server running on port ${PORT}`);
         });
     })
     .catch((err) => {

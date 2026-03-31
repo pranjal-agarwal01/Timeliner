@@ -1,29 +1,52 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getCompleted } from '../api';
 import toast from 'react-hot-toast';
 
 export default function Completed() {
     const [questions, setQuestions] = useState([]);
+    const [pagination, setPagination] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [search, setSearch] = useState('');
     const [difficulty, setDifficulty] = useState('');
     const [sort, setSort] = useState('newest');
 
-    const fetchCompleted = async () => {
+    // Fetch first page — resets the list on filter changes
+    const fetchCompleted = useCallback(async (searchOverride) => {
         try {
             setLoading(true);
-            const params = {};
-            if (search.trim()) params.search = search.trim();
+            const params = { page: 1, limit: 20 };
+            const s = searchOverride !== undefined ? searchOverride : search;
+            if (s.trim()) params.search = s.trim();
             if (difficulty) params.difficulty = difficulty;
-            // Only send sort if it's not the default
             if (sort && sort !== 'newest') params.sort = sort;
             const res = await getCompleted(params);
             setQuestions(res.data.questions);
+            setPagination(res.data.pagination);
         } catch {
             toast.error('Failed to load completed questions');
         } finally {
             setLoading(false);
+        }
+    }, [search, difficulty, sort]);
+
+    // Load next page — appends to existing list
+    const loadMore = async () => {
+        if (!pagination?.hasMore || loadingMore) return;
+        try {
+            setLoadingMore(true);
+            const params = { page: pagination.page + 1, limit: 20 };
+            if (search.trim()) params.search = search.trim();
+            if (difficulty) params.difficulty = difficulty;
+            if (sort && sort !== 'newest') params.sort = sort;
+            const res = await getCompleted(params);
+            setQuestions((prev) => [...prev, ...res.data.questions]);
+            setPagination(res.data.pagination);
+        } catch {
+            toast.error('Failed to load more');
+        } finally {
+            setLoadingMore(false);
         }
     };
 
@@ -39,9 +62,10 @@ export default function Completed() {
 
     const handleClearSearch = () => {
         setSearch('');
-        // trigger refetch with empty search
-        setTimeout(fetchCompleted, 0);
+        fetchCompleted('');
     };
+
+    const total = pagination?.total ?? questions.length;
 
     return (
         <div className="completed-page">
@@ -67,7 +91,7 @@ export default function Completed() {
                         <div style={{ position: 'relative', flex: 1 }}>
                             <input
                                 type="text"
-                                placeholder="Search by title or tag..."
+                                placeholder="Search by title..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="search-input"
@@ -151,12 +175,26 @@ export default function Completed() {
                     </div>
                 )}
 
+                {/* Footer */}
                 {!loading && questions.length > 0 && (
-                    <p className="completed-count">
-                        {questions.length} question{questions.length !== 1 ? 's' : ''} mastered 🏆
-                    </p>
+                    <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+                        <p className="completed-count">
+                            Showing {questions.length} of {total} question{total !== 1 ? 's' : ''} mastered 🏆
+                        </p>
+                        {pagination?.hasMore && (
+                            <button
+                                className="btn btn-glass btn-sm"
+                                style={{ marginTop: '0.75rem' }}
+                                onClick={loadMore}
+                                disabled={loadingMore}
+                            >
+                                {loadingMore ? <span className="spinner-sm" /> : 'Load More'}
+                            </button>
+                        )}
+                    </div>
                 )}
             </main>
         </div>
     );
 }
+

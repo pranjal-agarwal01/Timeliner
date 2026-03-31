@@ -71,9 +71,17 @@ const questionSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// Compound index for efficient "due today" queries
+// Compound indexes for efficient "due today" queries
 questionSchema.index({ userId: 1, revision3Date: 1, revision3Done: 1 });
 questionSchema.index({ userId: 1, revision10Date: 1, revision10Done: 1 });
-questionSchema.index({ userId: 1, completed: 1 });
+
+// Compound index covering /completed filter + default sort (newest first).
+// Including completedAt in the index means MongoDB can sort without a separate
+// in-memory sort pass.
+questionSchema.index({ userId: 1, completed: 1, completedAt: -1 });
+
+// Text index on title to power fast $text search in /completed.
+// Replaces the slow full-collection $regex scan with an inverted index lookup.
+questionSchema.index({ title: "text" });
 
 module.exports = mongoose.model("Question", questionSchema);

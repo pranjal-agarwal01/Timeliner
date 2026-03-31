@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { addQuestion, getTodayQuestions, markRevision3, markRevision10, logout as apiLogout } from '../api';
@@ -60,7 +60,9 @@ export default function Dashboard() {
         }
     };
 
-    const handleRevise = async (id, type) => {
+    // useCallback stabilises handleRevise so React.memo on DueItem can skip
+    // re-renders when unrelated state (form fields) changes in Dashboard.
+    const handleRevise = useCallback(async (id, type) => {
         try {
             if (type === 3) await markRevision3(id);
             else await markRevision10(id);
@@ -69,7 +71,7 @@ export default function Dashboard() {
         } catch {
             toast.error('Failed to mark revision');
         }
-    };
+    }, [fetchDue]);
 
     const handleLogout = async () => {
         try { await apiLogout(); } catch { }
@@ -257,7 +259,9 @@ export default function Dashboard() {
     );
 }
 
-function DueItem({ question, type, onRevise }) {
+// React.memo: DueItem only re-renders when its own props change.
+// Without this, typing in the Add form above would re-render every card.
+const DueItem = memo(function DueItem({ question, type, onRevise }) {
     const [marking, setMarking] = useState(false);
     const [confirming, setConfirming] = useState(false);
     const [phase, setPhase] = useState('collapsed');
@@ -405,4 +409,4 @@ function DueItem({ question, type, onRevise }) {
             </div>
         </div>
     );
-}
+});
